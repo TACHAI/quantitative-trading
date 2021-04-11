@@ -3,8 +3,6 @@
 # @Time     : 2021-04-07 19:11
 # @File     : base.py
 # @Project  : DeltaTrader
-import random
-
 import data.stock as st
 import numpy as np
 import datetime
