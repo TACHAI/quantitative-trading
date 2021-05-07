@@ -5,7 +5,7 @@
 # @Project  : DeltaTrader
 
 import data.stock as st
-import strategy.base as stb
+import mystrategy.base as stb
 import pandas as pd
 import matplotlib
 matplotlib.use('TkAgg')
@@ -22,12 +22,16 @@ for code in codes:
     # 计算每只股票的夏普比率
     daily_sharpe, annual_sharpe = stb.calculate_sharpe(data)
     print(data.head)
-    sharpes.append([code, annual_sharpe])  # 存放[[c1, s1],[c2, s2]..]
+    name = st.get_security_info(code,date=None).display_name
+    title=name+"("+code+")"
+    sharpes.append([title, annual_sharpe])  # 存放[[c1, s1],[c2, s2]..]
 
 
 
 # 可视化3只股票并比较
-sharpes = pd.DataFrame(sharpes, columns=['code', 'sharpe']).set_index('code')
+sharpes = pd.DataFrame(sharpes, columns=['title', 'sharpe']).set_index('title')
+
+
 print(sharpes)
 
 

@@ -12,6 +12,7 @@ pd.set_option('display.max_rows', 100000)
 pd.set_option('display.max_columns', 1000)
 
 
+
 # 全局变量 文件路径
 data_root = '/Users/mac/Desktop/pyCharm/DeltaTrader/data/'
 
@@ -35,6 +36,12 @@ def get_stock_list():
     """
     获取所有A股股票列表   上海证券交易所 .XSHG, 深圳证券交易所 .XSHE
     :return: stock_list
+    : get_all_securities  type: 类型 : stock(股票)，index(指数)，
+    etf(ETF基金)，fja（分级A），fjb（分级B），fjm（分级母基金），
+    mmf（场内交易的货币基金）open_fund（开放式基金）, bond_fund（债券基金）,
+     stock_fund（股票型基金）, QDII_fund（QDII 基金）,
+      money_market_fund（场外交易的货币基金）, mixture_fund（混合型基金）,
+       options(期权)
     """
     sock_list = list(get_all_securities(['stock']).index)
     return sock_list
@@ -70,11 +77,34 @@ def export_data(data, filename, type):
     :return: 股票数据类型，可以是：price、finance
     """
     file_root = '/Users/mac/Desktop/pyCharm/DeltaTrader/data/'+type+'/'+filename+'.csv'
-    data.index.names = ['Date']
+    data.index.names = ['date']
     if os.path.exists(file_root):
         data.to_csv(file_root, mode='a')
     data.to_csv(file_root)
     print('已成功存储至：', file_root)
+
+
+def get_csv_price(code, start_date, end_date, columns=None):
+    """
+    获取本地数据，且顺便完成数据更新工作
+    :param code: str,股票代码
+    :param start_date: str,起始日期
+    :param end_date: str,起始日期
+    :param columns: list,选取的字段
+    :return: dataframe
+    """
+    # 使用update直接更新
+    update_daily_price(code)
+    # 读取数据
+    file_root = data_root + 'price/' + code + '.csv'
+    if columns is None:
+        data = pd.read_csv(file_root, index_col='date')
+    else:
+        data = pd.read_csv(file_root, usecols=columns, index_col='date')
+    # print(data)
+    # 根据日期筛选股票数据
+    return data[(data.index >= start_date) & (data.index <= end_date)]
+
 
 
 def transfer_price_freq(data, time_freq):
@@ -115,7 +145,8 @@ def get_single_valuation(code, date, statDate):
     data = get_fundamentals(query(valuation).filter(valuation.code == code), date=date, statDate=statDate)
     return data
 
-def get_csv_data(code,  start_date, end_date, type='price'):
+
+def get_csv_data(code, start_date, end_date, type='price'):
     """
     获取本地的数据，且顺便完成数据更新工作
     :param code:
@@ -134,6 +165,7 @@ def get_csv_data(code,  start_date, end_date, type='price'):
 
 def calculate_change_pct(data):
     """
+    shift(1)把数据向下移动一位
     涨跌幅 = （当期收盘价-前期收盘价）/前期收盘价
     :param data:
     :return:
@@ -142,10 +174,9 @@ def calculate_change_pct(data):
     return data
 
 
-
 def update_daily_price(stock_code, type='price'):
-    """
 
+    """
     :param stock_code:
     :param type:
     :return:
@@ -157,7 +188,7 @@ def update_daily_price(stock_code, type='price'):
         startdate = pd.read_csv(file_root, usecols=['date'])['date'].iloc[-1]
         df = get_single_stock_price(stock_code, 'daily', startdate, datetime.datetime.today())
         # 3.3追加到已有文件中
-        export_data(df, stock_code, 'price', 'a')
+        export_data(df, stock_code, 'price')
     else:
         # 重新获取该股票行情数据
         df = get_single_stock_price(stock_code, 'daily', None, None)
@@ -179,4 +210,15 @@ if __name__ == '__main__':
     for code in stock_codes:
         update_daily_price(code, 'daily')
 
+    # update_daily_price('000001.XSHE')
+
+
+def get_index_list(index_symbol='000300.XSHG'):
+    """
+    获取指数成分股，指数代码查询：
+    :param index_symbol: https://www.joinquant.com/indexData
+    :return: list 成分代码
+    """
+    stocks = get_index_stocks(index_symbol)
+    return stocks
 
