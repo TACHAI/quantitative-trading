@@ -106,7 +106,6 @@ def get_csv_price(code, start_date, end_date, columns=None):
     return data[(data.index >= start_date) & (data.index <= end_date)]
 
 
-
 def transfer_price_freq(data, time_freq):
     """
     将数据转换为制定周期：开盘价（周期第一天）、收盘价（周期最后一天）、最高价（周期内）、最低价（周期内）
@@ -186,6 +185,7 @@ def update_daily_price(stock_code, type='price'):
     if os.path.exists(file_root):  # 如果存在对应文件
         # 3.2获取增量数据（code，startsdate=对应股票csv中最新日期，enddate=今天）
         startdate = pd.read_csv(file_root, usecols=['date'])['date'].iloc[-1]
+        print("stock_code:%sstartdate:%s"%(stock_code,startdate))
         df = get_single_stock_price(stock_code, 'daily', startdate, datetime.datetime.today())
         # 3.3追加到已有文件中
         export_data(df, stock_code, 'price')

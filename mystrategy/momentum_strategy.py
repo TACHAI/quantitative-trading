@@ -4,6 +4,7 @@
 # @File     : momentum_strategy.py
 # @Project  : DeltaTrader
 # @desc: 动量策略（正向）
+# 择股策略
 
 
 import data.stock as st
